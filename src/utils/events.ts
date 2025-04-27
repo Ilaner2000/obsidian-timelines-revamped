@@ -132,7 +132,7 @@ export const getEventData = (
 ): EventDataObject | null => {
   logger( 'getEventData | function starting for eventObject:', eventObject )
   const startDate = retrieveEventValue(
-    eventObject, 'startDate', '', frontMatterKeys?.startDateKey
+    eventObject, '', '', frontMatterKeys?.startDateKey
   )
   if ( !startDate ) {
     new Notice( `No date found for ${file.name}` )
@@ -144,9 +144,14 @@ export const getEventData = (
 
   // event parameters
   const classes        = retrieveEventValue( eventObject, 'classes', '' )
-  const color          = retrieveEventValue( eventObject, 'color', '' )
+  
+  let color = retrieveEventValue(eventObject, 'color', '');
+  if (!color) {
+    color = retrieveEventValue(eventObject, 'class', '');
+  }
+
   const endDate        = retrieveEventValue(
-    eventObject, 'endDate', startDate, frontMatterKeys?.endDateKey
+    eventObject, '', startDate, frontMatterKeys?.endDateKey
   )
   const era            = retrieveEventValue( eventObject, 'era', '' )
   const eventImg       = retrieveEventValue( eventObject, 'img', '' )
@@ -189,26 +194,30 @@ const retrieveEventValue = (
   frontMatterKeys?: string[] | null,
 ): string => {
   if ( isHTMLElementType( eventData )) {
-    return retrieveHTMLValue( eventData, datasetKey, defaultValue )
+    return retrieveHTMLValue(eventData, datasetKey, defaultValue, frontMatterKeys )
   } else {
     return retrieveFrontMatterValue( eventData, datasetKey, defaultValue, frontMatterKeys )
   }
 }
 
 const retrieveHTMLValue = (
-  event: HTMLElement,
+  eventData: HTMLElement,
   datasetKey: string,
-  defaultValue: string = '',
+  defaultValue: string,
+  frontMatterKeys?: string[] | null,
 ): string => {
-  logger( 'retrieveHTMLValue | datasetKey:', { key: datasetKey, value: event.dataset[datasetKey], defaultValue })
-  const result = event.dataset[datasetKey]
+  const keysToTry = frontMatterKeys ?? [datasetKey];
 
-  if ( !result || result === '' ) {
-    return defaultValue
+  for (const key of keysToTry) {
+    const val = eventData.getAttribute(`data-${key}`);
+    if (val) {
+      return val;
+    }
   }
 
-  return result
+  return defaultValue;
 }
+
 
 const retrieveFrontMatterValue = (
   event: FrontMatterCache,

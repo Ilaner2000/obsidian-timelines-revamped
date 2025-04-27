@@ -8,7 +8,7 @@
     "docs:drafts": "hugo -s docs/ server -D",
     "dev": "./scripts/dev-build.sh",
     "dev:rollup": "rollup --config rollup.config.js -w",
-    "build": "./scripts/build.sh",
+    "build": "build.bat",
     "bump:patch": "npm version patch --no-git-tag-version && node ./scripts/bump-manifest.mjs",
     "bump:minor": "npm version minor --no-git-tag-version && node ./scripts/bump-manifest.mjs",
     "bump:major": "npm version major --no-git-tag-version && node ./scripts/bump-manifest.mjs",
