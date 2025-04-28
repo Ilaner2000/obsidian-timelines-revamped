@@ -415,6 +415,7 @@ export function formatDate( dateString: string, formatString: string ): string {
   const match = dateString.match( dateRegex )
 
   if ( !match ) {
+    logger('formatDate | invalid dateString detected:', dateString) // <<<< 加這行，遇錯時也印
     throw new Error( 'Invalid date format. Expected format: YYYY or YYYY-MM or YYYY-MM-DD or YYYY-MM-DD-HH' )
   }
 

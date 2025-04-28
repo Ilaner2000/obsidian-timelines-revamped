@@ -92,10 +92,29 @@ export async function buildVerticalTimeline(
         endDate = ''
       }
 
-      // skip events that are of type 'box' or 'point', or if the endDate is invalid
-      if ( ['box', 'point'].includes( type ) || endDate < startDate  || !noteDivs ) {
-        continue
+      const getYearNumber = (dateStr: string): number => {
+        const match = dateStr.match(/-?\d{1,4}/);
+        if (match) {
+          return parseInt(match[0], 10);
+        }
+        return 0;
+      };
+
+      const startYear = getYearNumber(startDate);
+      const endYearNum = getYearNumber(endDate);
+
+      // type 邏輯：如果是 box/point，或 endYear 比 startYear 小，或沒 noteDivs，就 skip
+      if (['box', 'point'].includes(type) || endYearNum < startYear || !noteDivs) {
+        continue;
       }
+
+
+
+
+      // skip events that are of type 'box' or 'point', or if the endDate is invalid
+      // if ( ['box', 'point'].includes( type ) || endDate < startDate  || !noteDivs ) {
+      //   continue
+      // }
 
       if ( !containerDiv.classList.contains( 'timeline-head' )) {
         containerDiv.classList.add( 'timeline-head' )

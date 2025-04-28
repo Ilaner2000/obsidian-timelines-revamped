@@ -102,3 +102,21 @@ div.vis-item-overflow > div > a {
   font-family: "Comic Sans MS" !important;
   font-size: 15px !important;
 }
+
+.vis-item.vis-point {
+  background: none !important;
+  /* 取消背景 */
+  border: none !important;
+  /* 取消外框 */
+}
+
+.vis-item.vis-point .vis-item-content {
+  background: none !important;
+  /* 取消內容背景 */
+  padding: 0 5px !important;
+  /* 左右加一點間距 */
+}
+
+
+
+
