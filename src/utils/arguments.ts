@@ -42,6 +42,13 @@ export const createTagList = ( tagString: string, timelineTag: string ): ParsedT
     optionalTags: []
   }
 
+  // 新增：檢查是否是 RegExp (以 / 開始與結尾)
+  if (tagString.trim().startsWith('/') && tagString.trim().endsWith('/')) {
+    parsedTags.tagList.push(tagString.trim())
+    parsedTags.tagList.push(timelineTag)
+    return parsedTags
+  }
+
   tagString.split( ';' ).forEach(( tag: string ) => {
     if ( tag.includes( '|' )) {
       return parseOrTags( tag, parsedTags.optionalTags )

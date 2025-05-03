@@ -26,46 +26,56 @@ export * from './frontmatter'
  * @param {MetadataCache} metadataCache - See Obsidian's {@link MetadataCache}
  * @returns {boolean} true if file contains all tags in tagList, false otherwise
  */
-export function filterMdFiles( file: TFile, tags: string[], metadataCache: MetadataCache, parseOptional: boolean ): boolean {
-  logger( 'filterMDFiles | -----------------' )
-  if ( !tags || tags.length === 0 ) {
+export function filterMdFiles(file: TFile, tags: string[], metadataCache: MetadataCache, parseOptional: boolean): boolean {
+  logger('filterMDFiles | -----------------')
+  if (!tags || tags.length === 0) {
     return true
   }
 
-  const cache = metadataCache.getFileCache( file )
-  if ( !cache ) {
-    throw new Error( "Failed to get the file's metadataCache" )
+  const cache = metadataCache.getFileCache(file)
+  if (!cache) {
+    throw new Error("Failed to get the file's metadataCache")
   }
-  const rawTags = getAllTags( cache )
-  logger( `filterMDFiles | rawTags from file: ${file.name}:`, rawTags )
 
-  const mappedTags = rawTags?.map(( e ) => {
-    return e.slice( 1 ) // removes the "#"
-  }) ?? []
+  const rawTags = getAllTags(cache)
+  logger(`filterMDFiles | rawTags from file: ${file.name}:`, rawTags)
 
-  logger( `filterMDFiles | getAllTags from file: ${file.name}:`, mappedTags )
-  if ( !mappedTags.length ) {
+  const mappedTags = rawTags?.map((e) => e.slice(1)) ?? []
+  logger(`filterMDFiles | getAllTags from file: ${file.name}:`, mappedTags)
+
+  if (!mappedTags.length) {
     return false
   }
 
   const fileTags: string[] = []
-  mappedTags.forEach(( tag ) => {
-    return parseTag( tag, fileTags )
+  mappedTags.forEach((tag) => {
+    return parseTag(tag, fileTags)
   })
 
-  if ( parseOptional ) {
-    return tags.some(( val ) => {
-      logger( `filterMDFiles | testing optional val: ${val}`, fileTags.includes( String( val )))
-      return fileTags.includes( String( val ))
-    })
+  const testTags = (val: string): boolean => {
+    // 把全部的 tags 合併成一個字串（方便用正則同時檢查所有 tag）
+    const fileTagsString = fileTags.join(' ')
+
+    if (val.startsWith('/') && val.endsWith('/')) {
+      try {
+        const regex = new RegExp(val.slice(1, -1))
+        return regex.test(fileTagsString)
+      } catch (e) {
+        console.error('Invalid RegExp in tags:', val, e)
+        return fileTags.includes(val)
+      }
+    } else {
+      return fileTags.includes(val)
+    }
+  }
+
+
+  if (parseOptional) {
+    return tags.some(testTags)
   } else {
-    return tags.every(( val ) => {
-      logger( `filterMDFiles | testing required val: ${val}`, fileTags.includes( String( val )))
-      return fileTags.includes( String( val ))
-    })
+    return tags.every(testTags)
   }
 }
-
 /**
  * Return URL for specified image path
  *

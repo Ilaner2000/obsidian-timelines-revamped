@@ -56,8 +56,11 @@ export class TimelineBlockProcessor {
       if ( !entry ) return
 
       entry = entry.trim()
-      const [ tag, rawValue ] = entry.split( '=' )
-      const value = rawValue.trim()
+      const eqIndex = entry.indexOf('=')
+      if (eqIndex === -1) return
+      
+      const tag = entry.substring(0, eqIndex).trim()
+      const value = entry.substring(eqIndex + 1).trim()
 
       if ( tag.includes( 'Date' )) {
         // startDate, endDate, minDate, maxDate
