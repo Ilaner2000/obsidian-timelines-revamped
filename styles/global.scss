@@ -63,16 +63,43 @@
   }
 }
 
-/* Render the ob-timelines span or div elements as inline blocks that use an italic font */
+// /* Render the ob-timelines span or div elements as inline blocks that use an italic font */
+// .ob-timelines {
+//   display: inline-block !important;
+//   font-style: italic;
+// }
+
+// /* Use the before pseudo element to display attributes of the span or div */
+// .ob-timelines::before {
+//   content: "🔖 " attr(data-date) ": " attr(data-title) ".";
+//   color: lilac;
+//   font-weight: 500;
+// }
+
 .ob-timelines {
-  display: inline-block !important;
-  font-style: italic;
+  display: inline-block;
+  position: relative;
+  color: transparent;
+  user-select: none;
+  margin: 0;
+  padding: 0;
+  line-height: 0.5; /* 壓縮行距 */
+  vertical-align: middle; /* 讓多個 timeline 元素上下更貼近 */
 }
 
-/* Use the before pseudo element to display attributes of the span or div */
 .ob-timelines::before {
-  content: "🔖 " attr(data-date) ": " attr(data-title) ".";
-  color: lilac;
+  content: "🔖 " attr(data-date) ": " attr(data-title);
+  color:  #85929e;
+  font-style: italic;
   font-weight: 500;
+  display: inline-block;
+  line-height: 1.2; /* 保持和本體一致 */
+  margin: 0;
+  padding: 0;
 }
+
+.ob-timelines::selection {
+  background: none;
+}
+
 
