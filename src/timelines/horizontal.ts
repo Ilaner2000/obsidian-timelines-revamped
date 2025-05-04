@@ -52,6 +52,7 @@ export async function buildHorizontalTimeline(
       value: 1,
     },
   ]
+  
 
   timelineDates.forEach(( date ) => {
     // add all events at this date
@@ -113,14 +114,24 @@ export async function buildHorizontalTimeline(
         return group.content === event.group 
       })
       if ( !foundGroup && event.group ) {
-        const newGroup: MinimalGroup = {
+        const newGroup: MinimalGroup & { subgroupOrder?: any; subgroupStack?: boolean } = {
           content: event.group,
           id: groups.length + 1,
           value: groups.length + 1,
+
+          // 讓同一大組下的小組照字母升序排
+          subgroupOrder: (a: any, b: any) =>
+            String(a.subgroup).localeCompare(String(b.subgroup)),
+
+          // 要不要把同 subgroup 的項目再往上堆，視需求決定
+          subgroupStack: true,
         }
         groups.push( newGroup )
         foundGroup = newGroup
       }
+
+      // 取用筆記 front‑matter 或其他來源的 subgroup；若沒有就 undefined
+      const subgroup = (event as any).subgroup ?? undefined;   // ★新增
 
       const eventItem: EventItem = {
         id:        items.length + 1,
@@ -128,6 +139,7 @@ export async function buildHorizontalTimeline(
         className: initialClassName + ' ' + event.classes,
         end:       end ?? undefined,
         group:     foundGroup?.id ?? defaultGroup.id,
+        subgroup,                                    
         path:      event.path,
         start:     start,
         type:      typeOverride ? type : event.type,
@@ -140,6 +152,10 @@ export async function buildHorizontalTimeline(
       items.add( timelineItem )
     })
   })
+  const usedGroupIds = new Set<number>();
+  items.forEach((it) => usedGroupIds.add(it.group as number));
+
+  const visibleGroups = groups.filter(g => usedGroupIds.has(g.id));
 
   // Configuration for the Timeline
   const options = {
@@ -171,6 +187,15 @@ export async function buildHorizontalTimeline(
       a.value = b.value
       b.value = temp
     },
+
+    stack: true, 
+    stackSubgroups: true,  // 只堆疊同一 subgroup
+    margin: {
+      item: {
+        horizontal: 0              // ★ 預設 10，改成 0
+      }
+    },
+    
     template: ( item: EventItem ) => {
       const eventContainer = document.createElement( settings.notePreviewOnHover ? 'a' : 'div' )
       if ( 'href' in eventContainer ) {
@@ -185,7 +210,7 @@ export async function buildHorizontalTimeline(
   }
 
   timelineDiv.setAttribute( 'class', 'timeline-vis' )
-  const timeline = new Timeline( timelineDiv, items, groups, options )
+  const timeline = new Timeline(timelineDiv, items, visibleGroups, options )
 
   const arrows = makeArrowsArray( items )
 

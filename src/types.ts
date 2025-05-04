@@ -43,6 +43,7 @@ export interface CardContainer {
   endDate: CleanedDateResultObject,
   era: string,
   group: string,
+  subgroup?: string,   // ★ 加入
   img: string,
   path: string,
   pointsTo: string,
@@ -58,6 +59,7 @@ export interface EventDataObject {
   era: string,
   eventImg: string,
   group: string,
+  subgroup: string,   // ★ 加入
   noteBody: string,
   notePath: string,
   noteTitle: string,
@@ -74,6 +76,7 @@ export interface EventItem {
   content: string,
   end: Date | undefined,
   group: number,
+  subgroup?: string | number,   // 新增
   path: string,
   start: Date,
   type: string,

@@ -209,6 +209,7 @@ export class TimelineBlockProcessor {
           endDate: cleanedEndDateObject,
           era,
           group,
+          subgroup: eventData.subgroup ?? '',   // 沒值就給空字串或 undefined
           img: imgUrl,
           body: noteBody,
           path: notePath,

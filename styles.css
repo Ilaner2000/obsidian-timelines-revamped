@@ -164,7 +164,7 @@
 }
 
 :root {
-  hoverHighlightColor: transparent;
+  --hoverHighlightColor: transparent;
 }
 
 .vis-timeline {

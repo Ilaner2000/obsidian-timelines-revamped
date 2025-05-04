@@ -156,6 +156,7 @@ export const getEventData = (
   const era            = retrieveEventValue( eventObject, 'era', '' )
   const eventImg       = retrieveEventValue( eventObject, 'img', '' )
   const group          = retrieveEventValue( eventObject, 'group', '' )
+  const subgroup       = retrieveEventValue(eventObject, 'subgroup', '')   // ★ 新增
   const noteBody       = retrieveEventValue( eventObject, 'description', defaultBody )
   const notePath       = retrieveEventValue( eventObject, 'path', '/' + normalizePath( file.path ))
   const noteTitle      = retrieveEventValue(
@@ -173,6 +174,7 @@ export const getEventData = (
     era,
     eventImg,
     group,
+    subgroup,                // ★ 新增
     noteBody,
     notePath,
     noteTitle,
@@ -184,6 +186,7 @@ export const getEventData = (
   }
 
   logger( 'getEventData | full event:', { eventData })
+
   return eventData
 }
 
