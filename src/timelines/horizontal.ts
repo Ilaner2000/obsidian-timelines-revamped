@@ -195,7 +195,7 @@ export async function buildHorizontalTimeline(
         horizontal: 0              // ★ 預設 10，改成 0
       }
     },
-    
+
     template: ( item: EventItem ) => {
       const eventContainer = document.createElement( settings.notePreviewOnHover ? 'a' : 'div' )
       if ( 'href' in eventContainer ) {
@@ -209,8 +209,25 @@ export async function buildHorizontalTimeline(
     }
   }
 
+  const toggleBtn = document.createElement('button');
+  toggleBtn.className = 'tl-subgroup-toggle';
+  toggleBtn.textContent = '隱藏 subgroup';      // 預設顯示
+  el.prepend(toggleBtn);                        // 放到 timeline 上方
+
+
   timelineDiv.setAttribute( 'class', 'timeline-vis' )
-  const timeline = new Timeline(timelineDiv, items, visibleGroups, options )
+  const timeline = new Timeline(timelineDiv, items, visibleGroups, options );
+
+  (el as any)._tl = timeline;        // 暴露給按鈕用
+  let showSub = true;               // 紀錄目前狀態
+  toggleBtn.addEventListener('click', () => {
+    showSub = !showSub;
+    toggleBtn.textContent = showSub ? '隱藏 subgroup' : '顯示 subgroup';
+
+    timeline.setOptions({          // ★ 關鍵：即時修改 options
+      stackSubgroups: showSub      // true = 分列；false = 全收斂
+    });
+  });
 
   const arrows = makeArrowsArray( items )
 
