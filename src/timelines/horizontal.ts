@@ -161,6 +161,10 @@ export async function buildHorizontalTimeline(
     groupOrder: ( a: MinimalGroup, b: MinimalGroup ): number => {
       return a.value - b.value
     },
+    
+    orientation: {
+      axis: 'both' // <= 加這行！
+    },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     groupOrderSwap: ( a: MinimalGroup, b: MinimalGroup, groups: DataInterface<DataGroup, 'id'> ): void => {
       const temp = a.value
