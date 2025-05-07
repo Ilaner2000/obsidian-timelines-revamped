@@ -39,6 +39,29 @@ export async function buildHorizontalTimeline(
   // Create a DataSet
   const items = new DataSet<CombinedTimelineEventData>( [] )
 
+  // 1️⃣ 新增：讀 code-block 傳的 groupOrder
+  const desiredOrder = args.groupOrder ?? [];
+  // 2️⃣ 改寫這段
+  const groupOrderFn: (a: MinimalGroup, b: MinimalGroup) => number =
+    (a, b) => {
+      // ☆ 先把空 group 逼到最上面
+      const emptyA = a.content === '';
+      const emptyB = b.content === '';
+      if (emptyA && !emptyB) return -1;
+      if (emptyB && !emptyA) return 1;
+
+      // ☆ 再套用你原本的自訂排序（code-block 傳的）
+      if (desiredOrder.length > 0) {
+        const ia = desiredOrder.indexOf(a.content);
+        const ib = desiredOrder.indexOf(b.content);
+        const pa = ia >= 0 ? ia : desiredOrder.length;
+        const pb = ib >= 0 ? ib : desiredOrder.length;
+        return pa - pb;
+      }
+      // ☆ 最後退回 value 排序
+      return a.value - b.value;
+    };
+
   if ( !timelineDates ) {
     logger( 'buildHorizontalTimeline | No dates found for the timeline' )
     return
@@ -174,9 +197,8 @@ export async function buildHorizontalTimeline(
       order: true,
     } as TimelineGroupEditableOption,
     groupHeightMode: 'fitItems' as TimelineOptionsGroupHeightModeType,
-    groupOrder: ( a: MinimalGroup, b: MinimalGroup ): number => {
-      return a.value - b.value
-    },
+    groupOrder: groupOrderFn,  // 2️⃣ 取代原本的 a.value - b.value
+
     
     orientation: {
       axis: 'both' // <= 加這行！

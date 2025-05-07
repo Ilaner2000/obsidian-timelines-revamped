@@ -121,6 +121,7 @@ export interface InternalTimelineArgs {
   type: string | null,
   zoomInLimit: number,
   zoomOutLimit: number,
+  groupOrder?: string[]   // 新增：從 code-block 讀進來的排序清單
 }
 
 export interface MinimalGroup {

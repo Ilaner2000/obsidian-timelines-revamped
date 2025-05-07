@@ -80,7 +80,14 @@ export class TimelineBlockProcessor {
       case 'divHeight':
         this.args[tag] = parseInt( value )
         break
-      default:
+      case 'groupOrder':
+        // code-block: groupOrder = 歐洲, 近東, 南亞
+        this.args.groupOrder = value
+          .split(/[,;，\n]/)          // 支援逗號、分號或換行分隔
+          .map(s => s.trim())
+          .filter(Boolean);
+        break;
+    default:
         this.args[tag] = value
         break
       }
