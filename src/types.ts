@@ -128,6 +128,8 @@ export interface MinimalGroup {
   content: string,
   id: number,
   value: number,
+  /** 是否顯示，給 DataSet 動態更新用 */
+  visible?: boolean;
 }
 
 export interface ParsedTagObject {

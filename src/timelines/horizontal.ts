@@ -178,7 +178,11 @@ export async function buildHorizontalTimeline(
   const usedGroupIds = new Set<number>();
   items.forEach((it) => usedGroupIds.add(it.group as number));
 
-  const visibleGroups = groups.filter(g => usedGroupIds.has(g.id));
+  const visibleGroupArray = groups.filter(g => usedGroupIds.has(g.id));
+  const groupDataSet = new DataSet<MinimalGroup>(
+    // 在原始 group object 上面加上可选的 visible 属性
+    visibleGroupArray.map(g => ({ ...g, visible: true }))
+  );
 
   // Configuration for the Timeline
   const options = {
@@ -231,25 +235,91 @@ export async function buildHorizontalTimeline(
     }
   }
 
+
+  timelineDiv.setAttribute('class', 'timeline-vis')
+  // 1️⃣ 实例化 timeline
+  const timeline = new Timeline(timelineDiv, items, groupDataSet, options);
+
+  const controls = document.createElement('div');
+  controls.className = 'tl-controls';
+  el.prepend(controls);
+
+  // 2️⃣ 绑定 subgroup 切换按钮（你已有的）
   const toggleBtn = document.createElement('button');
+  toggleBtn.textContent = '隐藏 subgroup';
   toggleBtn.className = 'tl-subgroup-toggle';
-  toggleBtn.textContent = '隱藏 subgroup';      // 預設顯示
-  el.prepend(toggleBtn);                        // 放到 timeline 上方
-
-
-  timelineDiv.setAttribute( 'class', 'timeline-vis' )
-  const timeline = new Timeline(timelineDiv, items, visibleGroups, options );
-
-  (el as any)._tl = timeline;        // 暴露給按鈕用
-  let showSub = true;               // 紀錄目前狀態
+  let showSub = true;
   toggleBtn.addEventListener('click', () => {
     showSub = !showSub;
-    toggleBtn.textContent = showSub ? '隱藏 subgroup' : '顯示 subgroup';
-
-    timeline.setOptions({          // ★ 關鍵：即時修改 options
-      stackSubgroups: showSub      // true = 分列；false = 全收斂
-    });
+    toggleBtn.textContent = showSub ? '隐藏 subgroup' : '顯示 subgroup';
+    timeline.setOptions({ stackSubgroups: showSub });
   });
+  controls.appendChild(toggleBtn);
+
+  // 3️⃣ 绑定 group 切换按钮 + 下拉菜单
+  const groupBtn = document.createElement('button');
+  const groupMenu = document.createElement('div');
+  groupBtn.textContent = 'Groups';
+  groupBtn.className = 'tl-group-toggle-btn';
+  groupMenu.className = 'tl-group-menu';
+  groupMenu.style.display = 'none';
+
+  // 把按钮和菜单先插入
+  controls.appendChild(groupBtn);
+  controls.appendChild(groupMenu);
+
+  // 生成每个 group 的 checkbox
+  visibleGroupArray.forEach(g => {
+    const label = document.createElement('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = true;
+    cb.addEventListener('change', () => {
+      groupDataSet.update({ id: g.id, visible: cb.checked });
+    });
+    label.append(cb, document.createTextNode(g.content || 'Default'));
+    groupMenu.appendChild(label);
+  });
+
+  // 定义一个处理外部点击的函数
+  const handleClickOutsideGroupMenu = (event: MouseEvent) => {
+    // 检查点击事件的目标是否在 groupMenu 内部，或者是否是 groupBtn 本身
+    // 如果 groupMenu 可见，并且点击的不是 groupMenu 也不是 groupBtn
+    if (
+      groupMenu.style.display === 'block' &&
+      !groupMenu.contains(event.target as Node) &&
+      event.target !== groupBtn && // 确保点击的不是按钮本身
+      !groupBtn.contains(event.target as Node) // 进一步确保点击的不是按钮的子元素 (如果按钮内有图标等)
+    ) {
+      groupMenu.style.display = 'none';
+      // 一旦关闭，就移除 document 上的监听器
+      document.removeEventListener('click', handleClickOutsideGroupMenu, true); // 注意这里要用 true (捕获阶段)
+    }
+  };
+
+  // 按钮切换下拉的逻辑
+  groupBtn.addEventListener('click', (event) => {
+    // 阻止事件冒泡，这样当 document 监听到点击事件时，不会立即关闭刚打开的菜单
+    event.stopPropagation();
+
+    const isMenuVisible = groupMenu.style.display === 'block';
+    if (isMenuVisible) {
+      groupMenu.style.display = 'none';
+      // 移除 document 上的监听器
+      document.removeEventListener('click', handleClickOutsideGroupMenu, true);
+    } else {
+      groupMenu.style.display = 'block';
+      // 菜单打开时，在 document 上添加监听器，使用捕获阶段可以更早地处理点击
+      // 确保在下一个事件循环中添加，或者确保此处的点击事件不会立即触发 handleClickOutsideGroupMenu
+      // event.stopPropagation() 已经处理了这个问题
+      document.addEventListener('click', handleClickOutsideGroupMenu, true);
+    }
+  });
+
+  // 4️⃣ 最后挂载 timelineDiv
+  el.appendChild(timelineDiv);
+
+
 
   const arrows = makeArrowsArray( items )
 
@@ -268,9 +338,9 @@ export async function buildHorizontalTimeline(
     const timelineItem = buildCombinedTimelineDataObject( event, { className: newClass })
     items.updateOnly( [timelineItem] )
 
-    return () => {
-      timeline.off( 'itemover' )
-    }
+    // return () => {
+    //   timeline.off( 'itemover' )
+    // }
   })
 
   timeline.on( 'itemout', ( props ) => {
@@ -279,9 +349,9 @@ export async function buildHorizontalTimeline(
     const timelineItem = buildCombinedTimelineDataObject( event, { className: newClass })
     items.updateOnly( [timelineItem] )
 
-    return () => {
-      timeline.off( 'itemout' )
-    }
+    // return () => {
+    //   timeline.off( 'itemout' )
+    // }
   })
 
   // Replace the selected tags with the timeline html
