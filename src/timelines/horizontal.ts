@@ -121,7 +121,13 @@ export async function buildHorizontalTimeline(
         initialGroups.push(newGroup);
         foundGroup = newGroup;
       }
-      const subgroup = (event as any).subgroup ?? undefined;
+      // background items: '' → undefined，讓 vis-timeline 走 group 路徑填滿整個 group
+      // 其他 items: '' 保留，維持 subgroup lane 不重疊
+      const rawSubgroup = (event as any).subgroup;
+      const itemType = typeOverride ? type : event.type;
+      const subgroup = itemType === 'background'
+        ? (rawSubgroup || undefined)
+        : (rawSubgroup ?? undefined);
       const eventItem: EventItem = {
         id: items.length + 1,
         content: event.title ?? '',
@@ -310,5 +316,6 @@ export async function buildHorizontalTimeline(
     const originalClass = (event.className || '').split(' runtime-hover')[0];
     items.updateOnly([{ id: event.id, className: originalClass }]);
   });
+
 
 }
